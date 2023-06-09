@@ -5,6 +5,11 @@ The basic use of this package is to create a function that plots a single frame.
 This can then be passed to `make_animation_xarray()` to loop through a dataset
 and make an animation.
 
+Essentially this package wraps some ImageIO functions to make quick exploratory animations easier.
+`make_animation_xarray()` is the essential function. You can pass your xarray dataset to this
+routine. A function is also passed, which controls how to plot a single frame. See below
+for an example.
+
 ## Installation
 There is no pip or conda install for this package at the moment
 
@@ -47,7 +52,8 @@ def frame_func( data_ii ):
 Then we can animate the data using `ezanimate.make_animation_xarray()`:
 
 ```
-eza.make_animation_xarray( ds.zeta, anim_dim = 'ocean_time', 
+eza.make_animation_xarray( ds.zeta, fp_out = './anim.gif',
+                           anim_dim = 'ocean_time', 
                            frame_func = frame_func)
 ```
 
