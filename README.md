@@ -2,11 +2,11 @@
 Small package for easing the basic animation of data in an Xarray DataArray.
 
 The basic use of this package is to create a function that plots a single frame. 
-This can then be passed to `make_animation_xarray()` to loop through a dataset
+This can then be passed to `make_animation()` to loop through a dataset
 and make an animation.
 
 Essentially this package wraps some ImageIO functions to make quick exploratory animations easier.
-`make_animation_xarray()` is the essential function. You can pass your xarray dataset to this
+`make_animation()` is the essential function. You can pass your xarray dataset to this
 routine. A function is also passed, which controls how to plot a single frame. See below
 for an example.
 
@@ -24,7 +24,7 @@ There is no pip or conda install for this package at the moment
 
 Import what we need:
 
-```
+```python
 import ezanimate as eza
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 Read in your xarray dataset, with chunking if you want:
 
-```
+```python
 fp = <PATH TO NETCDF FILE>
 ds = xr.open_dataset(fp, chunks={'ocean_time':10})
 ```
@@ -43,18 +43,18 @@ to this package are that it takes an input argument called `data_ii` (which is d
 a single iteration of the plotting) and outputs the `matplotlib.figure()` object. For example
 to apply the basic xarray `.plot()` routine with some preset params:
 
-```
+```python
 def frame_func( data_ii ):
     f = data_ii.plot(vmin = -.5, vmax = .5, cmap=plt.get_cmap('bwr', 12)).figure
     return f
 ```
 
-Then we can animate the data using `ezanimate.make_animation_xarray()`:
+Then we can animate the data using `ezanimate.make_animation()`:
 
-```
-eza.make_animation_xarray( ds.zeta, fp_out = './anim.gif',
-                           anim_dim = 'ocean_time', 
-                           frame_func = frame_func)
+```python
+eza.make_animation( ds.zeta, fp_out = './anim.gif',
+                    anim_dim = 'ocean_time', 
+                    frame_func = frame_func)
 ```
 
 There are a number of optional arguments you can pass to this routine, which you can find
