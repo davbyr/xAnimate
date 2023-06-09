@@ -6,7 +6,7 @@ import os
 import shutil
 import random
 
-def _index_xarray(data, index, anim_dim):
+def _index_xarray(data, ii, anim_dim, index_stride):
     data_ii = data.isel( {anim_dim:ii*index_stride} ).squeeze()
     return data_ii
 
@@ -59,7 +59,7 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
             print(100 * (ii / n_keyframes), end='\r')
 
         # Index xarray function is here to future proof
-        data_ii = _index_xarray(data, ii, anim_dim)
+        data_ii = _index_xarray(data, ii, anim_dim, index_stride)
 
         fig = frame_func( data_ii = data_ii )
 
