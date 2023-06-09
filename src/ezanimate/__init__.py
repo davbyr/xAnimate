@@ -1,1 +1,1 @@
-from ._make_animation import make_animation_xarray
+from ._make_animation import make_animation

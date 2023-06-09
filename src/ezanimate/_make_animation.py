@@ -72,7 +72,7 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
         fp_out_list.append( dir_tmp / fn_out_ii )
         plt.close(fig)
 
-    make_animation_file( fp_out_list, fp_out, fps = fps )
+    compile_images_into_animation( fp_out_list, fp_out, fps = fps )
 
     shutil.rmtree(dir_tmp)
 
@@ -82,7 +82,7 @@ def ms2fps( ms ):
     ''' Converts milliseconds to frames per second '''
     return 1000 / ms
 
-def make_animation_file( fp_list, fp_out, fps = 10 ):
+def compile_images_into_animation( fp_list, fp_out, fps = 10 ):
     '''
     Wraps ImageIO.mimsave to make an animation file from a list of single image files
 
