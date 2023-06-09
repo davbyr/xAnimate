@@ -6,7 +6,11 @@ import os
 import shutil
 import random
 
-def make_animation_xarray( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time',
+def _index_xarray(data, index, anim_dim):
+    data_ii = data.isel( {anim_dim:ii*index_stride} ).squeeze()
+    return data_ii
+
+def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time',
                            index_stride = 1, verbose = False,
                            fps = 10, fig_transparent = True, 
                            fig_facecolor = 'white'):
@@ -25,6 +29,8 @@ def make_animation_xarray( data, fp_out='anim.gif', frame_func = None, anim_dim 
             frames.
         index_stride (int): The stride over which to create animation frames.
         verbose (bool): If true, print some information as we go.
+        fig_transparent (bool): Whether to make figure transparent in .savefig()
+        fig_facecolor (str): Color of figure facecolor in .savefig()
 
     Returns:
         None. Generates a new animation file.
@@ -51,7 +57,9 @@ def make_animation_xarray( data, fp_out='anim.gif', frame_func = None, anim_dim 
     for ii in range(n_keyframes):
         if verbose:
             print(100 * (ii / n_keyframes), end='\r')
-        data_ii = data.isel( {anim_dim:ii*index_stride} ).squeeze()
+
+        # Index xarray function is here to future proof
+        data_ii = _index_xarray(data, ii, anim_dim)
 
         fig = frame_func( data_ii = data_ii )
 
