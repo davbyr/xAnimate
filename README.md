@@ -10,6 +10,10 @@ Essentially this package wraps some ImageIO functions to make quick exploratory 
 routine. A function is also passed, which controls how to plot a single frame. See below
 for an example.
 
+Running `mask_animation()` will create a temporary directory in the same directory as
+your specified output file. This contains images of individual frames, which are later compiled
+into the output animation and removed (along with the temporary directory).
+
 ## Installation
 There is no pip or conda install for this package at the moment
 
