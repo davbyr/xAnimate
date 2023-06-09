@@ -5,7 +5,7 @@ The basic use of this package is to create a function that plots a single frame.
 This can then be passed to `make_animation_xarray()` to loop through a dataset
 and make an animation.
 
-### Installation
+## Installation
 There is no pip or conda install for this package at the moment
 
 1. Clone this repository.
