@@ -1,4 +1,4 @@
-# EZanimate Package
+# xAnimate Package : Easier xarray animation
 Small package for easing the basic animation of data in an Xarray DataArray.
 
 The basic use of this package is to create a function that plots a single frame. 
