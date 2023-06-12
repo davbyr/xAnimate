@@ -73,7 +73,7 @@ any of the arguments for `xr.DataArray.plot()`.
 
 An example might be a better way to explain:
 
-```
+```python
 import xAnimate
 import xAnimate.frames as frames
 
@@ -90,7 +90,7 @@ xAnimate.make_animation( ds.zeta,
 
 Alternatively, you can instantiate `Plot()` before the make animation call:
 
-```
+```python
 plot_func = frames.Plot(vmin = 0, vmax = 1, cmap='Reds')
 xAnimate.make_animation( ds.zeta, 
                          fp_out = './anim.gif',
