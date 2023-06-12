@@ -98,3 +98,4 @@ xAnimate.make_animation( ds.zeta,
                          frame_func = plot_func)
 ```
 
+`frames.Plot()` is currently the only frame function class.
