@@ -53,7 +53,7 @@ def frame_func( data_ii ):
     return f
 ```
 
-Then we can animate the data using `ezanimate.make_animation()`:
+Then we can animate the data using `xAnimate.make_animation()`:
 
 ```python
 xAnimate.make_animation( ds.zeta, fp_out = './anim.gif',
