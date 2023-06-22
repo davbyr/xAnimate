@@ -22,7 +22,7 @@ There is no pip or conda install for this package at the moment
 3. Change directory into the top level of the repo
 4. Enter `pip install .`
 
-## Useage examples
+## Usage examples
 
 ### 1. Make animation of dataarray using a bespoke frame plotting function
 
