@@ -64,7 +64,7 @@ xAnimate.make_animation( ds.zeta, fp_out = './anim.gif',
 There are a number of optional arguments you can pass to this routine, which you can find
 in docstring of the function.
 
-### 2. Make animation using the default Xarray xr.DataArray.plot() function
+### 2. Make animation using the default Frame Functions from the `frames` module function
 
 If you are animating a single data array, you can call the xr.DataArray.plot() function by importing the
 `xAnimate.frames` module. This contains a `Plot` class, which can be used in place of a bespoke function.
