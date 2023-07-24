@@ -24,7 +24,7 @@ There is no pip or conda install for this package at the moment
 
 ## Usage examples
 
-### 1. Make animation of dataarray using a bespoke frame plotting function
+### 1. Make animation of a single dataarray using a bespoke frame plotting function
 
 Import what we need:
 
@@ -41,15 +41,16 @@ fp = <PATH TO NETCDF FILE>
 ds = xr.open_dataset(fp, chunks={'ocean_time':10})
 ```
 
-Next, define a single function to plot a single frame of this data. This function will be
-applied to the xarray dataset to create individual frames. The only things that matter
-to this package are that it takes an input argument called `data_ii` (which is data from
-a single iteration of the plotting) and outputs the `matplotlib.figure()` object. For example
-to apply the basic xarray `.plot()` routine with some preset params:
+Next, define a single function to plot a single frame of this data -- called a "Frame Function". 
+This function will be applied to the xarray dataset to create individual frames. 
+A Frame Function must take at least one DataArray or Dataset as input. It may also take multiple.
+In addition, it must return a single `matplotlib.figure()` object. For example, we can plot a simple
+pcolormesh and animate it as follows:
 
 ```python
-def frame_func( data_ii ):
-    f = data_ii.plot(vmin = -.5, vmax = .5, cmap=plt.get_cmap('bwr', 12)).figure
+def frame_func( data ):
+    f,a = plt.subplots(1,1)
+    a.pcolormesh( data.lon, data.lat, data, vmin=-.4, vmax=.4, cmap=plt.get_cmap('Blues',12))
     return f
 ```
 
@@ -64,38 +65,26 @@ xAnimate.make_animation( ds.zeta, fp_out = './anim.gif',
 There are a number of optional arguments you can pass to this routine, which you can find
 in docstring of the function.
 
-### 2. Make animation using the default Frame Functions from the `frames` module function
+### 2. Make animation using multiple dataarrays and/or datasets
 
-If you are animating a single data array, you can call the xr.DataArray.plot() function by importing the
-`xAnimate.frames` module. This contains a `Plot` class, which can be used in place of a bespoke function.
-You can pass this class directly to the make_animation function (using the `frame_func` argument), passing
-any of the arguments for `xr.DataArray.plot()`.
-
-An example might be a better way to explain:
+As mentioned in the previous section, you can also pass multiple datasets or dataarrays to
+a frame function and `make_animation()`. For example, maybe we want to plot a pcolormesh
+with a contour overlayed from a different dataset:
 
 ```python
-import xAnimate
-import xAnimate.frames as frames
-
-# Read dataset from netcdf
-fp = <PATH TO NETCDF FILE>
-ds = xr.open_dataset(fp, chunks={'ocean_time':10})
-
-# Make animation
-xAnimate.make_animation( ds.zeta, 
-                         fp_out = './anim.gif',
-                         anim_dim = 'ocean_time', 
-                         frame_func = frames.Plot(vmin = 0, cmap='Reds'))
+def frame_func( data, dataset ):
+    f,a = plt.subplots(1,1)
+    a.pcolormesh( data.lon, data.lat, data, vmin=-.4, vmax=.4, cmap=plt.get_cmap('Blues',12))
+    a.contour( dataset.lon, dataset.lat, dataset.contourdata )
+    return f
 ```
 
-Alternatively, you can instantiate `Plot()` before the make animation call:
-
+Then, we can use `make_animation()` by passing our data array and datasets in a list:
 ```python
-plot_func = frames.Plot(vmin = 0, vmax = 1, cmap='Reds')
-xAnimate.make_animation( ds.zeta, 
-                         fp_out = './anim.gif',
+xAnimate.make_animation( [ds.zeta, ds], fp_out = './anim.gif',
                          anim_dim = 'ocean_time', 
-                         frame_func = plot_func)
+                         frame_func = frame_func)
 ```
 
-`frames.Plot()` is currently the only frame function class.
+When using multiple datasets, you must ensure that all inputs have the same time dimension,
+both in terms of length and name. Spatial dimensions can vary however.
