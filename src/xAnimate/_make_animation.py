@@ -6,9 +6,18 @@ import os
 import shutil
 import random
 
-def _index_xarray(data, ii, anim_dim, index_stride):
-    data_ii = data.isel( {anim_dim:ii*index_stride} ).squeeze()
-    return data_ii
+def check_data( data, anim_dim ):
+
+    # Check that all input datasets have the same time dimension
+    n_data = len(data)
+    n_time0 = data[0].sizes[anim_dim]
+    
+    for dii in data:
+        if anim_dim not in dii.dims:
+            raise ValueError('anim_dim = {anim_dim} not found in at least one input dataset')
+        if dii.sizes[anim_dim] != n_time0:
+            raise ValueError('Not all time dimensions have the same length')
+        
 
 def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time',
                            index_stride = 1, verbose = False,
@@ -35,9 +44,14 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
     Returns:
         None. Generates a new animation file.
     '''
+    # Check if input data is list
+    if type(data) != list:
+        data = [data]
+    check_data(data, anim_dim)
 
     # Get some important numbers
-    n_anim = data.sizes[anim_dim]
+    n_inputs = len(data)
+    n_anim = data[0].sizes[anim_dim]
     n_keyframes = np.ceil( n_anim / index_stride ).astype(int)
 
     # Get output directory
@@ -59,9 +73,8 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
             print(100 * (ii / n_keyframes), end='\r')
 
         # Index xarray function is here to future proof
-        data_ii = _index_xarray(data, ii, anim_dim, index_stride)
-
-        fig = frame_func( data_ii = data_ii )
+        data_ii = [dii.isel( {anim_dim:ii*index_stride} ).squeeze() for dii in data]
+        fig = frame_func( *data_ii )
 
         # Get filename for this index
         idx_str = str(ii).zfill(n_digits)
