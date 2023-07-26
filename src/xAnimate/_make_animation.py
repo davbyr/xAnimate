@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import shutil
 import random
+import warnings
 
 def check_data( data, anim_dim ):
 
@@ -13,16 +14,15 @@ def check_data( data, anim_dim ):
     n_time0 = data[0].sizes[anim_dim]
     
     for dii in data:
-        if anim_dim not in dii.dims:
-            raise ValueError('anim_dim = {anim_dim} not found in at least one input dataset')
-        if dii.sizes[anim_dim] != n_time0:
-            raise ValueError('Not all time dimensions have the same length')
+        if anim_dim in dii.dims:
+            if dii.sizes[anim_dim] != n_time0:
+                raise ValueError('Not all time dimensions have the same length')
         
 
-def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time',
-                           index_stride = 1, verbose = False,
-                           fps = 10, fig_transparent = True, 
-                           fig_facecolor = 'white'):
+def make_animation(data, fp_out='anim.gif', frame_func = None, anim_dim = 'time',
+                   index_stride = 1, verbose = False,
+                   fps = 10, fig_transparent = True, 
+                   fig_facecolor = 'white', loop = 0):
     ''' Make an animation from an xarray dataset or data array.
 
     Args:
@@ -44,6 +44,33 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
     Returns:
         None. Generates a new animation file.
     '''
+    # Silence warnings
+    warnings.filterwarnings("ignore")
+
+    try:
+        # Get output directory
+        fp_out = Path( fp_out ).resolve()
+        fp_out_base = fp_out.stem
+        dir_out = fp_out.parents[0]
+        randstr = str( random.randint(1000000, 9999999) )
+        dir_tmp = dir_out / f'xanim_tmp_{fp_out_base}.{randstr}'
+        os.mkdir(dir_tmp)
+        _try_make_animation( dir_tmp, data, fp_out, frame_func, anim_dim, 
+                             index_stride, verbose, fps,
+                             fig_transparent, fig_facecolor, loop )
+    except:
+        # If there's a problem or interrupted, make sure to remove temporary directory
+        shutil.rmtree(dir_tmp)
+
+
+
+def _try_make_animation( dir_tmp, data, fp_out='anim.gif',
+                         frame_func = None, anim_dim = 'time',
+                         index_stride = 1, verbose = False,
+                         fps = 10, fig_transparent = True, 
+                         fig_facecolor = 'white', loop=0):
+    ''' The real make_animation function. All the same inputs as make_animation. '''
+    
     # Check if input data is list
     if type(data) != list:
         data = [data]
@@ -53,15 +80,6 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
     n_inputs = len(data)
     n_anim = data[0].sizes[anim_dim]
     n_keyframes = np.ceil( n_anim / index_stride ).astype(int)
-
-    # Get output directory
-    fp_out = Path( fp_out ).resolve()
-    fp_out_base = fp_out.stem
-    dir_out = fp_out.parents[0]
-    randstr = str( random.randint(1000000, 9999999) )
-    dir_tmp = dir_out / f'ezanim_tmp_{fp_out_base}.{randstr}'
-    print(dir_tmp)
-    os.mkdir(dir_tmp)
                                
     # Get number of digits for output files
     n_digits = len(str(n_keyframes))
@@ -70,22 +88,28 @@ def make_animation( data, fp_out='anim.gif', frame_func = None, anim_dim = 'time
     fp_out_list = []
     for ii in range(n_keyframes):
         if verbose:
-            print(100 * (ii / n_keyframes), end='\r')
+            pc = np.round(100 * (ii / n_keyframes),1)
+            print( f'{pc}%', end='\r')
 
         # Index xarray function is here to future proof
-        data_ii = [dii.isel( {anim_dim:ii*index_stride} ).squeeze() for dii in data]
+        data_ii=[]
+        for dii in data:
+            if anim_dim in dii.dims:
+                data_ii.append(dii.isel( {anim_dim:ii*index_stride} ).squeeze() )
+            else:
+                data_ii.append(dii.squeeze())
         fig = frame_func( *data_ii )
 
         # Get filename for this index
         idx_str = str(ii).zfill(n_digits)
-        fn_out_ii = f'ezanim_tmpfile_{idx_str}.png'
+        fn_out_ii = f'xanim_tmpfile_{idx_str}.png'
         fig.savefig( dir_tmp / fn_out_ii, 
                      transparent = fig_transparent,  
                      facecolor = fig_facecolor )
         fp_out_list.append( dir_tmp / fn_out_ii )
         plt.close(fig)
 
-    compile_images_into_animation( fp_out_list, fp_out, fps = fps )
+    compile_images_into_animation( fp_out_list, fp_out, fps = fps, loop = loop )
 
     shutil.rmtree(dir_tmp)
 
@@ -95,7 +119,7 @@ def ms2fps( ms ):
     ''' Converts milliseconds to frames per second '''
     return 1000 / ms
 
-def compile_images_into_animation( fp_list, fp_out, fps = 10 ):
+def compile_images_into_animation( fp_list, fp_out, fps = 10, loop = 0 ):
     '''
     Wraps ImageIO.mimsave to make an animation file from a list of single image files
 
@@ -117,4 +141,5 @@ def compile_images_into_animation( fp_list, fp_out, fps = 10 ):
     duration = ms2fps( fps )
     imageio.mimsave(fp_out,        
                     frames,      
-                    duration = duration)    
+                    duration = duration,
+                    loop = loop)    
